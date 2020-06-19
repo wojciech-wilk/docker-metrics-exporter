@@ -1,3 +1,9 @@
+#[macro_use]
+extern crate log;
+
 fn main() {
-    println!("Hello, world!");
+    dotenv::dotenv().ok();
+    env_logger::init();
+
+    info!("Starting docker-metrics-exporter 0.1...");
 }
