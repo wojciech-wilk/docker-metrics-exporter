@@ -3,6 +3,10 @@ name = "docker-metrics-exporter"
 version = "0.1.0"
 authors = ["Wojciech Wilk <galhadpl@gmail.com>"]
 edition = "2018"
+readme = "README.md"
+homepage = "https://github.com/Galhad/docker-metrics-exporter"
+repository = "https://github.com/Galhad/docker-metrics-exporter"
+license-file = "LICENSE"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
