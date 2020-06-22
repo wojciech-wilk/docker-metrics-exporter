@@ -123,3 +123,5 @@ Cargo.lock
 .history
 
 # End of https://www.toptal.com/developers/gitignore/api/visualstudiocode,intellij,rust
+
+.local

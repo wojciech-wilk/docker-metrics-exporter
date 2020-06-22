@@ -9,13 +9,13 @@
 
 ---
 
-Features:
+**Features:**
 
 - Provides Docker Swarm metrics
 - Uses Docker API
 - Small resources footprint
 
-Why not simply use Docker engine out-of-the-box metrics?
+**Why not simply use Docker engine out-of-the-box metrics?**
 
 - Docker engine provides metrics as an experimental feature
   (metrics, names can change without backward compatibility)
