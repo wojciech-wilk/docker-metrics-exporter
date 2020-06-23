@@ -1,9 +1,9 @@
-use actix_web::{App, HttpServer};
 use crate::settings::Settings;
-use std::process;
+use std::{process};
 
-mod settings;
+mod app;
 mod metrics;
+mod settings;
 
 #[macro_use]
 extern crate log;
@@ -18,12 +18,8 @@ async fn main() -> std::io::Result<()> {
     match settings {
         Ok(settings) => {
             println!("{:?}", settings);
-            info!("Starting docker-metrics-exporter 0.1...");
-
-            HttpServer::new(|| App::new().service(metrics::service::index))
-                .bind(format!("{}:{}", settings.http.address, settings.http.port))?
-                .run()
-                .await
+            let app: app::App = app::App::new(settings);
+            app.start().await
         }
         Err(error) => {
             error!("Configuration error: {:?}", error);
