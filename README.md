@@ -31,6 +31,24 @@
 
 ## Configuration
 
+Currently the only configuration mode is to use environment variables.
+
+Configuration with defaults:
+```bash
+RUST_LOG=info,docker_metrics_exporter=debug
+
+# HTTP server bind address that will be scraped by the Prometheus
+DME_HTTP_ADDRESS=0.0.0.0
+# HTTP server bind port
+DME_HTTP_PORT=8080
+
+# Docker daemon URL
+# socket
+DME_DOCKER_URL=unix:///var/run/docker.sock
+# TCP
+#DME_DOCKER_URL=http://127.0.0.1:2375
+```
+
 ## Build
 
 To build `docker-metrics-exporter` you need Rust 1.40+ toolchain.
