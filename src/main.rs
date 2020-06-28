@@ -2,6 +2,7 @@ use crate::settings::Settings;
 use std::{process};
 
 mod app;
+mod docker;
 mod metrics;
 mod settings;
 
