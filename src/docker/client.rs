@@ -1,17 +1,17 @@
-use std::error::Error;
+use std::fmt;
 use std::path::Path;
 
+use async_trait::async_trait;
 use futures::TryStreamExt;
 use hyper::{Body, Client, Response};
 use hyper::client::HttpConnector;
 use hyperlocal::{UnixClientExt, UnixConnector, Uri};
 use serde::de::DeserializeOwned;
 
-use async_trait::async_trait;
-
-use crate::docker::types::{Version, Info};
+use crate::docker::types::{Info, Version};
 use crate::settings::DockerClientSettings;
 
+#[derive(Clone)]
 pub struct DockerClient {
     client: Box<dyn Get>,
 }
@@ -33,25 +33,27 @@ impl DockerClient {
         }
     }
 
-    pub async fn get_info(&self) -> Result<Info, Box<dyn Error>> {
+    pub async fn get_info(&self) -> Result<Info, DockerClientError> {
         Ok(self.get("/info").await?)
     }
 
-    pub async fn get_version(&self) -> Result<Version, Box<dyn Error>> {
+    pub async fn get_version(&self) -> Result<Version, DockerClientError> {
         Ok(self.get("/version").await?)
     }
 }
 
 #[async_trait]
-trait Get {
-    async fn get(&self, path: &str) -> Result<Response<Body>, Box<dyn Error>>;
+trait Get: CloneGet {
+    async fn get(&self, path: &str) -> Result<Response<Body>, DockerClientError>;
 }
 
+#[derive(Clone)]
 struct TcpClient {
     client: Client<HttpConnector, Body>,
     base_url: String,
 }
 
+#[derive(Clone)]
 struct UnixClient {
     client: Client<UnixConnector, Body>,
     socket_path: String,
@@ -77,7 +79,7 @@ impl TcpClient {
 
 #[async_trait]
 impl Get for UnixClient {
-    async fn get(&self, path: &str) -> Result<Response<Body>, Box<dyn Error>> {
+    async fn get(&self, path: &str) -> Result<Response<Body>, DockerClientError> {
         let uri = Uri::new(Path::new(&self.socket_path), path).into();
 
         Ok(self.client.get(uri).await?)
@@ -86,15 +88,15 @@ impl Get for UnixClient {
 
 #[async_trait]
 impl Get for TcpClient {
-    async fn get(&self, path: &str) -> Result<Response<Body>, Box<dyn Error>> {
+    async fn get(&self, path: &str) -> Result<Response<Body>, DockerClientError> {
         let uri_string = format!("{}{}", &self.base_url, path);
 
-        Ok(self.client.get(uri_string.parse()?).await?)
+        Ok(self.client.get(uri_string.parse().unwrap()).await?)
     }
 }
 
 impl DockerClient {
-    async fn get<Type>(&self, path: &str) -> Result<Type, Box<dyn Error>>
+    async fn get<Type>(&self, path: &str) -> Result<Type, DockerClientError>
         where Type: DeserializeOwned {
         debug!("GET {}", &path);
         let result = self.client.get(path).await?;
@@ -112,3 +114,50 @@ impl DockerClient {
         Ok(serde_json::from_str(body_string.as_str())?)
     }
 }
+
+trait CloneGet {
+    fn clone_get(&self) -> Box<dyn Get>;
+}
+
+impl<T> CloneGet for T
+    where T: Get + Clone + 'static {
+    fn clone_get(&self) -> Box<dyn Get> {
+        Box::new(self.clone())
+    }
+}
+
+impl Clone for Box<dyn Get> {
+    fn clone(&self) -> Self {
+        self.clone_get()
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct DockerClientError;
+
+impl std::error::Error for DockerClientError {}
+
+impl fmt::Display for DockerClientError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Docker client error")
+    }
+}
+
+impl From<hyper::error::Error> for DockerClientError {
+    fn from(_: hyper::error::Error) -> Self {
+        DockerClientError {}
+    }
+}
+
+impl From<serde_json::error::Error> for DockerClientError {
+    fn from(_: serde_json::error::Error) -> Self {
+        DockerClientError {}
+    }
+}
+
+impl From<std::string::FromUtf8Error> for DockerClientError {
+    fn from(_: std::string::FromUtf8Error) -> Self {
+        DockerClientError {}
+    }
+}
+

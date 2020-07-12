@@ -1,9 +1,9 @@
-use actix_web::HttpServer;
+use actix_web::{HttpServer, middleware};
+use actix_web::web::Data;
 
 use crate::metrics;
+use crate::settings::build_info::BUILD_INFO;
 use crate::settings::Settings;
-
-const VERSION: &str = "0.1.0";
 
 pub struct App {
     settings: Settings,
@@ -16,10 +16,14 @@ impl App {
         }
     }
 
-    pub async fn start(self) -> std::io::Result<()> {
-        info!("Starting docker-metrics-exporter {}...", VERSION);
+    pub async fn start(&self) -> std::io::Result<()> {
+        info!("Starting docker-metrics-exporter {}({})...", &BUILD_INFO.version, &BUILD_INFO.commit_hash);
 
-        let server = HttpServer::new(|| actix_web::App::new().service(metrics::service::metrics))
+        let settings_data = Data::new(self.settings.clone());
+        let server = HttpServer::new(move || actix_web::App::new()
+            .wrap(middleware::Logger::default())
+            .service(metrics::service::metrics)
+            .app_data(settings_data.clone()))
             .workers(2)
             .bind(format!("{}:{}", self.settings.http.address, self.settings.http.port))?
             .run();
@@ -29,7 +33,6 @@ impl App {
             Ok((r, _)) => Ok(r),
             Err(e) => Err(e)
         }
-
     }
 
     async fn start_callback(&self) -> std::io::Result<()> {
