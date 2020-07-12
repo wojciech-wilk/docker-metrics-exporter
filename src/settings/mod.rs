@@ -1,7 +1,9 @@
 use config::{Config, ConfigError, Environment};
 use serde::Deserialize;
 
-#[derive(Deserialize, Debug, Default)]
+pub mod build_info;
+
+#[derive(Deserialize, Debug, Default, Clone)]
 #[serde(default)]
 pub struct Settings {
     pub http: HttpServerSettings,
@@ -9,14 +11,14 @@ pub struct Settings {
     pub docker: DockerClientSettings,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 #[serde(default)]
 pub struct HttpServerSettings {
     pub address: String,
     pub port: u16,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 #[serde(default)]
 pub struct DockerClientSettings {
     pub url: String,
@@ -58,7 +60,7 @@ impl Settings {
         let docker_url_split: Vec<&str> = self.docker.url.split("://").collect();
         let schema = docker_url_split[0].to_lowercase();
 
-        static ALLOWED_SCHEMAS: [&str;3] = ["unix", "http", "https"];
+        static ALLOWED_SCHEMAS: [&str; 3] = ["unix", "http", "https"];
         if !ALLOWED_SCHEMAS.contains(&schema.as_str()) {
             let message = format!("Docker Client URL schema '{}' must be one of the following: {}.",
                                   schema, ALLOWED_SCHEMAS.join(", "));

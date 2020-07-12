@@ -29,6 +29,8 @@
 
 ## Metrics
 
+For the complete list of supported metrics see [METRICS.md](METRICS.md).
+
 ## Configuration
 
 Currently the only configuration mode is to use environment variables.
@@ -61,7 +63,7 @@ cargo build --release
 
 ## License
 
-MIT, see [LICENSE](https://github.com/Galhad/docker-metrics-exporter/blob/master/LICENSE)
+MIT, see [LICENSE](LICENSE)
 
 [Build status]: https://travis-ci.org/Galhad/docker-metrics-exporter.svg?branch=master
 [Travis]: https://travis-ci.org/Galhad/docker-metrics-exporter
