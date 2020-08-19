@@ -14,7 +14,7 @@ pub struct Metric {
 impl Metric {
     pub fn into_prometheus_string(&self) -> String {
         let labels = self.labels.iter()
-            .map(|label| [label.name.as_str(), "=", label.value.as_str()].concat())
+            .map(|label| [label.name.as_str(), "=\"", label.value.as_str(), "\""].concat())
             .collect::<Vec<String>>()
             .join(",")
             ;

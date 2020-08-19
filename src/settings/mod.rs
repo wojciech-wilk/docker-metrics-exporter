@@ -28,7 +28,7 @@ impl Default for HttpServerSettings {
     fn default() -> Self {
         HttpServerSettings {
             address: "127.0.0.1".to_string(),
-            port: 8080,
+            port: 9091,
         }
     }
 }

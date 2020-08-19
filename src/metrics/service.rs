@@ -27,7 +27,7 @@ fn get_info() -> Metric {
         value: "1".to_string(),
         labels: vec![
             Label { name: "commit".to_string(), value: BUILD_INFO.commit_hash.to_string() },
-            Label { name: "version".to_string(), value: BUILD_INFO.version.to_string() }
+            Label { name: "version".to_string(), value: BUILD_INFO.version.to_string() },
         ],
     }
 }
@@ -36,8 +36,10 @@ async fn get_docker_version(client: &DockerClient) -> Result<Metric, DockerClien
     let version = client.get_version().await?;
 
     Ok(Metric {
-        name: "docker_version".to_string(),
-        value: version.version,
-        labels: vec![],
+        name: "docker_info".to_string(),
+        value: "1".to_string(),
+        labels: vec![
+            Label { name: "version".to_string(), value: version.version },
+        ],
     })
 }
