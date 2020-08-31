@@ -14,7 +14,7 @@ pub async fn metrics(settings: Data<Settings>) -> Result<String, actix_web::Erro
 
     Ok(
         vec![docker_version, get_info()]
-            .iter()
+            .into_iter()
             .map(|metric| metric.into_prometheus_string())
             .collect::<Vec<String>>()
             .join("\n")
@@ -22,24 +22,20 @@ pub async fn metrics(settings: Data<Settings>) -> Result<String, actix_web::Erro
 }
 
 fn get_info() -> Metric {
-    Metric {
-        name: "version_info".to_string(),
-        value: "1".to_string(),
-        labels: vec![
-            Label { name: "commit".to_string(), value: BUILD_INFO.commit_hash.to_string() },
-            Label { name: "version".to_string(), value: BUILD_INFO.version.to_string() },
-        ],
-    }
+    let labels = Some(vec![
+        Label::new("commit".to_string(), BUILD_INFO.commit_hash.to_string()),
+        Label::new("version".to_string(), BUILD_INFO.version.to_string()),
+    ]);
+
+    Metric::new("version_info".to_string(), "1".to_string(), labels)
 }
 
 async fn get_docker_version(client: &DockerClient) -> Result<Metric, DockerClientError> {
     let version = client.get_version().await?;
 
-    Ok(Metric {
-        name: "docker_info".to_string(),
-        value: "1".to_string(),
-        labels: vec![
-            Label { name: "version".to_string(), value: version.version },
-        ],
-    })
+    let labels = Some(vec![
+        Label::new("version".to_string(), version.version),
+    ]);
+
+    Ok(Metric::new("docker_info".to_string(), "1".to_string(), labels))
 }
